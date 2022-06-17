@@ -75,7 +75,6 @@ struct headers {
     ethernet_t         ethernet;
     ipv4_t             ipv4;
     ipv6_t             ipv6;
-    ipv4_option_t      ipv4_option;
     mri_t              mri;
     switch_t[MAX_HOPS] swtraces;
 }
@@ -116,7 +115,7 @@ parser MyParser(packet_in packet,
         verify(hdr.ipv4.ihl >= 5, error.IPHeaderTooShort);
         transition select(hdr.ipv4.ihl) {
             5             : accept;
-            default       : parse_ipv4_option;
+            default       : parse_mri;
         }
     }
 
@@ -228,7 +227,6 @@ control MyEgress(inout headers hdr,
         hdr.swtraces[0].qdepth = (qdepth_t)standard_metadata.deq_qdepth;
 
         hdr.ipv4.ihl = hdr.ipv4.ihl + 2;
-        hdr.ipv4_option.optionLength = hdr.ipv4_option.optionLength + 8;
         hdr.ipv4.totalLen = hdr.ipv4.totalLen + 8;
     }
 
