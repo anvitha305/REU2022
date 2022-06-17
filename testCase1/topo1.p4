@@ -104,7 +104,7 @@ parser MyParser(packet_in packet,
 
     state parse_ivp6 {
         packet.extract(hdr.ethernet);
-        transitoin select(hdr.ethernet.etherType) {
+        transition select(hdr.ethernet.etherType) {
             TYPE_IPV4: parse_ipv4;
             default: accept;
         }
