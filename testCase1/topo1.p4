@@ -266,16 +266,6 @@ control MyComputeChecksum(inout headers hdr, inout metadata meta) {
               hdr.ipv4.srcAddr,
               hdr.ipv4.dstAddr },
             hdr.ipv4.hdrChecksum,
-            hdr.ipv6.isValid(),
-            { hdr.ipv6.version,
-              hdr.ipv6.trafficClass,
-              hdr.ipv6.flowLabel,
-              hdr.ipv6.payload_len,
-              hdr.ipv6.next_header,
-              hdr.ipv6.hop_limit,
-              hdr.ipv6.srcAddr,
-              hdr.ipv6.dstAddr},
-            hdr.ipv6.hdrChecksum,
             HashAlgorithm.csum16);
     }
 }
