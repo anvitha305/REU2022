@@ -1,5 +1,5 @@
 {
-    "hosts": {
+"hosts": {
         "h11": {"ip": "10.0.1.11/31", "mac": "08:00:00:00:01:11",
                "commands":["route add default gw 10.0.1.0 dev eth0",
                            "arp -i eth0 -s 10.0.1.0 08:00:00:00:01:00"]},
