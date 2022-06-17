@@ -1,0 +1,32 @@
+{
+    "hosts": {
+        "h11": {"ip": "10.0.1.11/31", "mac": "08:00:00:00:01:11",
+               "commands":["route add default gw 10.0.1.0 dev eth0",
+                           "arp -i eth0 -s 10.0.1.0 08:00:00:00:01:00"]},
+        "h12": {"ip": "10.0.1.12/31", "mac": "08:00:00:00:01:12",
+                "commands":["route add default gw 10.0.1.10 dev eth0",
+                            "arp -i eth0 -s 10.0.1.10 08:00:00:00:01:00"]},
+        "h21": {"ip": "10.0.2.21/31", "mac": "08:00:00:00:02:21",
+               "commands":["route add default gw 10.0.2.3 dev eth0",
+                           "arp -i eth0 -s 10.0.2.3 08:00:00:00:02:00"]},
+        "h22": {"ip": "10.0.2.22/31", "mac": "08:00:00:00:02:22",
+                "commands":["route add default gw 10.0.2.23 dev eth0",
+                            "arp -i eth0 -s 10.0.2.23 08:00:00:00:02:00"]},
+        "h31": {"ip": "10.0.3.31/31", "mac": "08:00:00:00:03:31",
+               "commands":["route add default gw 10.0.3.2 dev eth0",
+                           "arp -i eth0 -s 10.0.3.2 08:00:00:00:03:00"]},
+        "h32": {"ip": "10.0.3.32/31", "mac": "08:00:00:00:03:32",
+               "commands":["route add default gw 10.0.3.2 dev eth0",
+                           "arp -i eth0 -s 10.0.3.2 08:00:00:00:03:00"]}
+    },
+    "switches": {
+        "s1": { "runtime_json" : "s1-runtime.json" },
+        "s2": { "runtime_json" : "s2-runtime.json" },
+        "s3": { "runtime_json" : "s3-runtime.json" }
+    },
+    "links": [
+        ["h11", "s1-p1"], ["h12", "s1-p2"],
+        ["h21", "s2-p1"], ["h22", "s2-p2"],
+        ["h31", "s3-p1"], ["h32", "s3-p2"]
+    ]
+}
