@@ -1,9 +1,9 @@
 BUILD_DIR = build
 PCAP_DIR = pcaps
 LOG_DIR = logs
-
+RUN_SCRIPT = run_exercise.py
 P4C = p4c-bm2-ss
-P4C_ARGS += --p4runtime-files $(BUILD_DIR)/$(basename $@).p4.p4info.txt
+
 
 
 ifndef TOPO

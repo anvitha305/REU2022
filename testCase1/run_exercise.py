@@ -27,7 +27,7 @@ from time import sleep
 
 import p4runtime_lib.simple_controller
 from mininet.cli import CLI
-from mininet.link import TCLink
+#from mininet.link import TCLink
 from mininet.net import Mininet
 from mininet.topo import Topo
 from p4_mininet import P4Host, P4Switch
@@ -385,4 +385,3 @@ if __name__ == '__main__':
                               args.switch_json, args.behavioral_exe, args.quiet)
 
     exercise.run_exercise()
-
