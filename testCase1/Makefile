@@ -7,7 +7,7 @@ P4C = p4c-bm2-ss
 
 
 ifndef TOPO
-TOPO = topo1.json
+TOPO = basic.json
 endif
 
 source = $(wildcard *.p4)
