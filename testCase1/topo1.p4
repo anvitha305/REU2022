@@ -114,8 +114,7 @@ parser MyParser(packet_in packet,
         }
     }
 
-    state par
-    se_tigercy {
+    state parse_tigercy {
         packet.extract(hdr.tigercy);
         transition select(hdr.ethernet.etherType) {
             TYPE_IPV6: parse_ipv6;
