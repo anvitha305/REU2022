@@ -3,11 +3,11 @@ PCAP_DIR = pcaps
 LOG_DIR = logs
 RUN_SCRIPT = run_exercise.py
 P4C = p4c-bm2-ss
-
+BMV2_SWITCH_EXE = simple_switch_grpc
 
 RUN_SCRIPT = run_exercise.py
 ifndef TOPO
-TOPO = basic.json
+TOPO = topology.json
 endif
 
 source = $(wildcard *.p4)
