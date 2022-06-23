@@ -114,7 +114,8 @@ parser MyParser(packet_in packet,
         }
     }
 
-    state parse_tigercy {
+    state par
+    se_tigercy {
         packet.extract(hdr.tigercy);
         transition select(hdr.ethernet.etherType) {
             TYPE_IPV6: parse_ipv6;
@@ -194,8 +195,8 @@ control MyIngress(inout headers hdr,
 
     action tigercy_forward(tigercyAddr_t dstAddr, egressSpec_t port) {
         standard_metadata.egress_spec = port;
-        hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
-        hdr.ethernet.dstAddr = dstAddr;
+        hdr.tigercy.srcAddr = hdr.tigercy.dstAddr;
+        hdr.tigercy.dstAddr = dstAddr;
         hdr.tigercy.ttl = hdr.tigercy.ttl - 1;
     }
 
