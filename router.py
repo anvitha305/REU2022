@@ -1,11 +1,11 @@
 from mininet.net import Containernet
-from mininet.node import Node 
+from mininet.node import Node
 from mininet.cli import CLI
 from mininet.link import TCLink
 from mininet.log import info, setLogLevel
 
 
-class LinuxRouter( Node ):
+class LinuxRouter(Node):
     "A Node with IP forwarding enabled."
 
     # pylint: disable=arguments-differ
