@@ -1,17 +1,22 @@
 BUILD_DIR = build
 PCAP_DIR = pcaps
 LOG_DIR = logs
-
+RUN_SCRIPT = run_exercise.py
 P4C = p4c-bm2-ss
-P4C_ARGS += --p4runtime-files $(BUILD_DIR)/$(basename $@).p4.p4info.txt
+
 
 RUN_SCRIPT = run_exercise.py
 ifndef TOPO
-TOPO = topo1.json
+TOPO = basic.json
 endif
 
-source = $(topo1.p4)
-compiled_json := $(topo1.json)
+source = $(wildcard *.p4)
+compiled_json := $(source:.p4=.json)
+
+ifndef DEFAULT_PROG
+DEFAULT_PROG = $(wildcard *.p4)
+endif
+DEFAULT_JSON = $(BUILD_DIR)/$(DEFAULT_PROG:.p4=.json)
 
 
 
