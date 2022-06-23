@@ -5,7 +5,7 @@
 const bit<8>  UDP_PROTOCOL = 0x11;
 const bit<16> TYPE_IPV4 = 0x800;
 const bit<16> TYPE_IPV6 = 0x86dd;
-const bit<16> TYPE_TIGER = D00F;
+const bit<16> TYPE_TIGER = 0xD00F;
 
 #define MAX_HOPS 9
 
