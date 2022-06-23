@@ -1580,7 +1580,7 @@
       ["standard_metadata", "priority"]
     ]
   ],
-  "program" : "./topo1.p4i",
+  "program" : "topo1.p4",
   "__meta__" : {
     "version" : [2, 23],
     "compiler" : "https://github.com/p4lang/p4c"

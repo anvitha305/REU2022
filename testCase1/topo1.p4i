@@ -877,6 +877,7 @@ package V1Switch<H, M>(Parser<H, M> p,
 const bit<8> UDP_PROTOCOL = 0x11;
 const bit<16> TYPE_IPV4 = 0x800;
 const bit<16> TYPE_IPV6 = 0x86dd;
+const bit<16> TYPE_TIGER = 0xD00F;
 
 
 
@@ -887,6 +888,7 @@ const bit<16> TYPE_IPV6 = 0x86dd;
 typedef bit<9> egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
+typedef bit<16> tigercyAddr_t;
 typedef bit<128> ip6Addr_t;
 typedef bit<32> switchID_t;
 typedef bit<32> qdepth_t;
@@ -910,6 +912,14 @@ header ipv4_t {
     bit<16> hdrChecksum;
     ip4Addr_t srcAddr;
     ip4Addr_t dstAddr;
+}
+
+header tigercy_t {
+    bit<4> version;
+    bit<8> ttl;
+    bit<20> fragOffset;
+    tigercyAddr_t srcAddr;
+    tigercyAddr_t dstAddr;
 }
 
 header ipv6_t {
@@ -951,6 +961,7 @@ struct headers {
     ipv6_t ipv6;
     mri_t mri;
     switch_t[9] swtraces;
+    tigercy_t tigercy;
 }
 
 error { IPHeaderTooShort }
@@ -970,6 +981,14 @@ parser MyParser(packet_in packet,
 
     state parse_ethernet {
         packet.extract(hdr.ethernet);
+        transition select(hdr.ethernet.etherType) {
+            TYPE_TIGER: parse_tigercy;
+            default: accept;
+        }
+    }
+
+    state parse_tigercy {
+        packet.extract(hdr.tigercy);
         transition select(hdr.ethernet.etherType) {
             TYPE_IPV6: parse_ipv6;
             default: accept;
@@ -1046,6 +1065,25 @@ control MyIngress(inout headers hdr,
         hdr.ethernet.dstAddr = dstAddr;
     }
 
+    action tigercy_forward(tigercyAddr_t dstAddr, egressSpec_t port) {
+        standard_metadata.egress_spec = port;
+        hdr.tigercy.srcAddr = hdr.tigercy.dstAddr;
+        hdr.tigercy.dstAddr = dstAddr;
+        hdr.tigercy.ttl = hdr.tigercy.ttl - 1;
+    }
+
+    table tigercy_lpm {
+        key = {
+            hdr.tigercy.dstAddr: lpm;
+        }
+        actions = {
+            tigercy_forward;
+            drop;
+        }
+        size = 1024;
+        default_action = drop();
+    }
+
     table ipv4_lpm {
         key = {
             hdr.ipv4.dstAddr: lpm;
@@ -1072,6 +1110,9 @@ control MyIngress(inout headers hdr,
     }
 
     apply {
+        if (hdr.tigercy.isValid()) {
+            tigercy_lpm.apply();
+        }
         if (hdr.ipv4.isValid()) {
             ipv4_lpm.apply();
         }
