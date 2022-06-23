@@ -45,6 +45,7 @@ header ipv4_t {
 header tigercy_t {
     bit<4>        version;
     bit<8>        ttl;
+    bit<20>       fragOffset;
     tigercyAddr_t srcAddr;
     tigercyAddr_t dstAddr;
 }
@@ -237,6 +238,9 @@ control MyIngress(inout headers hdr,
     }
 
     apply {
+        if (hdr.tigercy.isValid()) {
+            tigercy_lpm.apply();
+        }
         if (hdr.ipv4.isValid()) {
             ipv4_lpm.apply();
         }
