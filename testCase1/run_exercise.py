@@ -27,11 +27,16 @@ from time import sleep
 
 import p4runtime_lib.simple_controller
 from mininet.cli import CLI
-#from mininet.link import TCLink
-from mininet.net import Mininet
 from mininet.topo import Topo
 from p4_mininet import P4Host, P4Switch
 from p4runtime_switch import P4RuntimeSwitch
+from router import LinuxRouter
+from mininet.net import Containernet
+from mininet.node import Node, Controller
+from mininet.net import Mininet
+from mininet.log import info, setLogLevel
+from router import LinuxRouter
+
 
 
 def configureP4Switch(**switch_args):
@@ -66,61 +71,6 @@ def configureP4Switch(**switch_args):
         return ConfiguredP4Switch
 
 
-class ExerciseTopo(Topo):
-    """ The mininet topology class for the P4 tutorial exercises.
-    """
-    def __init__(self, hosts, switches, links, log_dir, bmv2_exe, pcap_dir, **opts):
-        Topo.__init__(self, **opts)
-        host_links = []
-        switch_links = []
-
-        # assumes host always comes first for host<-->switch links
-        for link in links:
-            if link['node1'][0] == 'h':
-                host_links.append(link)
-            else:
-                switch_links.append(link)
-
-        for sw, params in switches.items():
-            if "program" in params:
-                switchClass = configureP4Switch(
-                        sw_path=bmv2_exe,
-                        json_path=params["program"],
-                        log_console=True,
-                        pcap_dump=pcap_dir)
-            else:
-                # add default switch
-                switchClass = None
-            self.addSwitch(sw, log_file="%s/%s.log" %(log_dir, sw), cls=switchClass)
-
-        for link in host_links:
-            host_name = link['node1']
-            sw_name, sw_port = self.parse_switch_node(link['node2'])
-            host_ip = hosts[host_name]['ip']
-            host_mac = hosts[host_name]['mac']
-            self.addHost(host_name, ip=host_ip, mac=host_mac)
-            self.addLink(host_name, sw_name,
-                         delay=link['latency'], bw=link['bandwidth'],
-                         port2=sw_port)
-
-        for link in switch_links:
-            sw1_name, sw1_port = self.parse_switch_node(link['node1'])
-            sw2_name, sw2_port = self.parse_switch_node(link['node2'])
-            self.addLink(sw1_name, sw2_name,
-                        port1=sw1_port, port2=sw2_port,
-                        delay=link['latency'], bw=link['bandwidth'])
-
-
-    def parse_switch_node(self, node):
-        assert(len(node.split('-')) == 2)
-        sw_name, sw_port = node.split('-')
-        try:
-            sw_port = int(sw_port[1:])
-        except:
-            raise Exception('Invalid switch node in topology file: {}'.format(node))
-        return sw_name, sw_port
-
-
 class ExerciseRunner:
     """
         Attributes:
@@ -140,7 +90,6 @@ class ExerciseRunner:
 
     """
     def logger(self, *items):
-        if not self.quiet:
             print(' '.join(items))
 
     def format_latency(self, l):
@@ -165,21 +114,6 @@ class ExerciseRunner:
                 bmv2_exe    : string  // Path to the p4 behavioral binary
                 quiet : bool          // Enable/disable script debug messages
         """
-
-        self.quiet = quiet
-        self.logger('Reading topology file.')
-        with open(topo_file, 'r') as f:
-            topo = json.load(f)
-        self.hosts = topo['hosts']
-        self.switches = topo['switches']
-        self.links = self.parse_links(topo['links'])
-
-        # Ensure all the needed directories exist and are directories
-        for dir_name in [log_dir, pcap_dir]:
-            if not os.path.isdir(dir_name):
-                if os.path.exists(dir_name):
-                    raise Exception("'%s' exists and is not a directory!" % dir_name)
-                os.mkdir(dir_name)
         self.log_dir = log_dir
         self.pcap_dir = pcap_dir
         self.switch_json = switch_json
@@ -193,47 +127,6 @@ class ExerciseRunner:
         """
         # Initialize mininet with the topology specified by the config
         self.create_network()
-        self.net.start()
-        sleep(1)
-
-        # some programming that must happen after the net has started
-        self.program_hosts()
-        self.program_switches()
-
-        # wait for that to finish. Not sure how to do this better
-        sleep(1)
-
-        self.do_net_cli()
-        # stop right after the CLI is exited
-        self.net.stop()
-
-
-    def parse_links(self, unparsed_links):
-        """ Given a list of links descriptions of the form [node1, node2, latency, bandwidth]
-            with the latency and bandwidth being optional, parses these descriptions
-            into dictionaries and store them as self.links
-        """
-        links = []
-        for link in unparsed_links:
-            # make sure each link's endpoints are ordered alphabetically
-            s, t, = link[0], link[1]
-            if s > t:
-                s,t = t,s
-
-            link_dict = {'node1':s,
-                        'node2':t,
-                        'latency':'0ms',
-                        'bandwidth':None
-                        }
-            if len(link) > 2:
-                link_dict['latency'] = self.format_latency(link[2])
-            if len(link) > 3:
-                link_dict['bandwidth'] = link[3]
-
-            if link_dict['node1'][0] == 'h':
-                assert link_dict['node2'][0] == 's', 'Hosts should be connected to switches, not ' + str(link_dict['node2'])
-            links.append(link_dict)
-        return links
 
 
     def create_network(self):
@@ -251,13 +144,48 @@ class ExerciseRunner:
                                 log_console=True,
                                 pcap_dump=self.pcap_dir)
 
-        self.topo = ExerciseTopo(self.hosts, self.switches, self.links, self.log_dir, self.bmv2_exe, self.pcap_dir)
+        setLogLevel('info')
+        net = Containernet(controller=Controller)
+        # not adding a controller !!! [controller ??? i hardly know  her]
+        #info('*** Adding controller\n')
+        net.addController('c0')
 
-        self.net = Mininet(topo = self.topo,
-                      host = P4Host,
-                      switch = defaultSwitchClass,
-                      controller = None)
+        info('*** Adding routers\n')
+        routers = []
+        for i in range(2):
+            routers.append(net.addHost(name = 'r%s'%(i+1),  ip = '192.168.1.%s/24'%(i+1)))
 
+        info('*** Adding switches\n')
+        switches = []
+        for i in range(3):
+            switches.append(net.addSwitch('s%s'%(i+1)))
+        print(len(switches))
+        info('*** Adding dockers\n')
+        dockers = []
+        for i in range(1,4):
+            dockers.append(net.addDocker('d%s'%(i), ip = '10.0.0.25%s'%(i),dimage="ubuntu:trusty"))
+        print(len(dockers))
+        for d in range(3):
+            net.addLink(dockers[d], switches[d])
+        info('*** Adding hosts\n')
+        hosts = []
+        for h in range(3):
+            for i in range(2):
+                    hosts.append(net.addHost('h%s.%s' % (h+1, i+1)))
+                    #self.addLink(dockers[h], hosts[h*2 + i])
+        info('*** Creating links\n')
+        for h in range(0,6,2):
+            for i in range(3):
+                net.addLink(hosts[h], dockers[i])
+                net.addLink(hosts[h+1], dockers[i])
+        for i in range(len(switches)):
+            for r in routers:
+                net.addLink(switches[i], r, intfName2='r0-eth%s'%(i+1),)
+        net.start()
+        info('*** Running CLI\n')
+        CLI(net)
+        info('*** Stopping network')
+        net.stop()
     def program_switch_p4runtime(self, sw_name, sw_dict):
         """ This method will use P4Runtime to program the switch using the
             content of the runtime JSON file as input.
@@ -373,6 +301,46 @@ def get_args():
     parser.add_argument('-b', '--behavioral-exe', help='Path to behavioral executable',
                                 type=str, required=False, default='simple_switch')
     return parser.parse_args()
+
+class NetworkTopo(Topo):
+    def build(self, **_opts):
+        setLogLevel('info')
+        net = Containernet(controller=Controller)
+        # not adding a controller !!! [controller ??? i hardly know  her]
+        #info('*** Adding controller\n')
+        net.addController('c0')
+
+        info('*** Adding routers\n')
+        routers = []
+        for i in range(2):
+            routers.append(net.addHost(name = 'r%s'%(i+1),  ip = '192.168.1.%s/24'%(i+1)))
+
+        info('*** Adding switches\n')
+        switches = []
+        for i in range(3):
+            switches.append(net.addSwitch('s%s'%(i+1)))
+        print(len(switches))
+        info('*** Adding dockers\n')
+        dockers = []
+        for i in range(1,4):
+            dockers.append(net.addDocker('d%s'%(i), ip = '10.0.0.25%s'%(i),dimage="ubuntu:trusty"))
+        print(len(dockers))
+        for d in range(3):
+            net.addLink(dockers[d], switches[d])
+        info('*** Adding hosts\n')
+        hosts = []
+        for h in range(3):
+            for i in range(2):
+                    hosts.append(net.addHost('h%s.%s' % (h+1, i+1)))
+                    #self.addLink(dockers[h], hosts[h*2 + i])
+        info('*** Creating links\n')
+        for h in range(0,6,2):
+            for i in range(3):
+                net.addLink(hosts[h], dockers[i])
+                net.addLink(hosts[h+1], dockers[i])
+        for i in range(len(switches)):
+            for r in routers:
+                net.addLink(switches[i], r, intfName2='r0-eth%s'%(i+1),)
 
 
 if __name__ == '__main__':
