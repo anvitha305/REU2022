@@ -12,8 +12,6 @@ class LinuxRouter(Node):
     def config( self, **params ):
         super( LinuxRouter, self).config( **params )
         # Enable forwarding on the router
-        def describe(self):
-            print("routers !!!!!")
         self.cmd( 'sysctl net.ipv4.ip_forward=1' )
 
     def terminate( self ):
