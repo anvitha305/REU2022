@@ -158,15 +158,6 @@ parser MyParser(packet_in packet,
 ************   C H E C K S U M    V E R I F I C A T I O N   *************
 *************************************************************************/
 
-control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
-    apply {  }
-}
-
-
-/*************************************************************************
-**************  I N G R E S S   P R O C E S S I N G   *******************
-*************************************************************************/
-
 control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
@@ -179,6 +170,31 @@ control MyIngress(inout headers hdr,
         hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
         hdr.ethernet.dstAddr = dstAddr;
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
+    }
+    
+    action rtp_forward(macAddr_t dstAddr, egressSpec_t port) {
+        if (hdr.ethernet.srcAddr == 08:00:00:00:01:01) {
+            hdr.ethernet.dstAddr = 08:00:00:00:03:03;
+        }
+        if (hdr.ethernet.srcAddr == 08:00:00:00:03:03) {
+            hdr.ethernet.dstAddr = 08:00:00:00:02:02;
+        }
+        else {
+            hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
+            hdr.ethernet.dstAddr = dstAddr;
+            standard_metadata.egress_spec = port;
+    }
+    
+    table rtp_lpm {
+        key = {
+            hdr.rtp.dstAddr: lpm;
+        }
+        actions = {
+            rtp_forward;
+            drop;
+        }
+        size = 1024;
+        default_action = NoAction();
     }
 
     table ipv4_lpm {
@@ -197,6 +213,9 @@ control MyIngress(inout headers hdr,
     apply {
         if (hdr.ipv4.isValid()) {
             ipv4_lpm.apply();
+        }
+        if (hdr.rtp.isValid()) {
+            rtp_lpm.apply();
         }
     }
 }
