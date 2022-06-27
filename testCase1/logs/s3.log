@@ -1,8 +1,8 @@
 Calling target program-options parser
 Adding interface s3-eth1 as port 1
-[15:49:56.030] [bmv2] [D] [thread 2181] Adding interface s3-eth1 as port 1
+[15:52:13.296] [bmv2] [D] [thread 2668] Adding interface s3-eth1 as port 1
 Adding interface s3-eth2 as port 2
-[15:49:56.068] [bmv2] [D] [thread 2181] Adding interface s3-eth2 as port 2
+[15:52:13.337] [bmv2] [D] [thread 2668] Adding interface s3-eth2 as port 2
 Server listening on 0.0.0.0:50053
-[15:49:56.105] [bmv2] [I] [thread 2181] Starting Thrift server on port 9092
-[15:49:56.105] [bmv2] [I] [thread 2181] Thrift server was started
+[15:52:13.354] [bmv2] [I] [thread 2668] Starting Thrift server on port 9092
+[15:52:13.354] [bmv2] [I] [thread 2668] Thrift server was started
