@@ -13,7 +13,7 @@ const bit<5>  IPV4_OPTION_MRI = 31;
 *************************************************************************/
 
 typedef bit<9>  egressSpec_t;
-typedef string macAddr_t;
+typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
 typedef bit<32> switchID_t;
 typedef bit<32> qdepth_t;
@@ -173,7 +173,7 @@ control MyIngress(inout headers hdr,
     }
     
     action rtp_forward(macAddr_t dstAddr, egressSpec_t port) {
-        if (hdr.ethernet.srcAddr == "08:00:00:00:01:01") {
+        if (hdr.ethernet.srcAddr.toString() == "08:00:00:00:01:01") {
             hdr.ethernet.dstAddr = "08:00:00:00:03:03";
         }
         if (hdr.ethernet.srcAddr == "08:00:00:00:03:03") {
