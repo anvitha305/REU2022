@@ -50,7 +50,7 @@ header mri_t {
     bit<16>  count;
 }
 
-header_type rtp_t {
+header rtp_t {
     bit<2> version;
     bit<1> padding;
     bit<1> extension;
