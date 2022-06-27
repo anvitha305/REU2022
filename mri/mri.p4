@@ -183,6 +183,7 @@ control MyIngress(inout headers hdr,
             hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
             hdr.ethernet.dstAddr = dstAddr;
             standard_metadata.egress_spec = port;
+        }
     }
     
     table rtp_lpm {
