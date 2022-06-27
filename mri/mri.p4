@@ -50,6 +50,19 @@ header mri_t {
     bit<16>  count;
 }
 
+header_type rtp_t {
+    bit<2> version;
+    bit<1> padding;
+    bit<1> extension;
+    bit<4> CSRC_count;
+    bit<1> marker;
+    bit<7> payload_type;
+    bit<16> sequence_number;
+    bit<32> timestamp;
+    bit<32> SSRC;
+} 
+
+
 header switch_t {
     switchID_t  swid;
     qdepth_t    qdepth;
@@ -73,6 +86,7 @@ struct headers {
     ipv4_t             ipv4;
     ipv4_option_t      ipv4_option;
     mri_t              mri;
+    rtp_t              rtp;
     switch_t[MAX_HOPS] swtraces;
 }
 
@@ -95,6 +109,7 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType) {
             TYPE_IPV4: parse_ipv4;
+            
             default: accept;
         }
     }
@@ -124,6 +139,9 @@ parser MyParser(packet_in packet,
             default: parse_swtrace;
         }
     }
+    state parse_rtp {
+        packet.extract(hdr.rtp);
+    } 
 
     state parse_swtrace {
         packet.extract(hdr.swtraces.next);
