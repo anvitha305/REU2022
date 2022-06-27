@@ -173,11 +173,11 @@ control MyIngress(inout headers hdr,
     }
     
     action rtp_forward(macAddr_t dstAddr, egressSpec_t port) {
-        if (hdr.ethernet.srcAddr == 08:00:00:00:01:01) {
-            hdr.ethernet.dstAddr = 08:00:00:00:03:03;
+        if (hdr.ethernet.srcAddr == "08:00:00:00:01:01") {
+            hdr.ethernet.dstAddr = "08:00:00:00:03:03";
         }
-        if (hdr.ethernet.srcAddr == 08:00:00:00:03:03) {
-            hdr.ethernet.dstAddr = 08:00:00:00:02:02;
+        if (hdr.ethernet.srcAddr == "08:00:00:00:03:03") {
+            hdr.ethernet.dstAddr = "08:00:00:00:02:02";
         }
         else {
             hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
