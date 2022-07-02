@@ -57,6 +57,7 @@ def configureP4Switch(**switch_args):
                 kwargs.update(switch_args)
                 kwargs['thrift_port'] = ConfiguredP4Switch.next_thrift_port
                 ConfiguredP4Switch.next_thrift_port += 1
+                self.grpc_port=3128
                 P4Switch.__init__(self, *opts, **kwargs)
 
             def describe(self):
@@ -86,7 +87,7 @@ class ExerciseTopo(Topo):
                         sw_path=bmv2_exe,
                         json_path=params["program"],
                         log_console=True,
-                        pcap_dump=pcap_dir)
+                        pcap_dump=pcap_dir,)
             else:
                 # add default switch
                 switchClass = None
@@ -384,4 +385,3 @@ if __name__ == '__main__':
                               args.switch_json, args.behavioral_exe, args.quiet)
 
     exercise.run_exercise()
-

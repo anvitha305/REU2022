@@ -1,0 +1,11 @@
+Calling target program-options parser
+[14:48:17.762] [bmv2] [D] [thread 5276] Set default default entry for table 'MyIngress.ipv4_lpm': NoAction - 
+[14:48:17.762] [bmv2] [D] [thread 5276] Set default default entry for table 'MyEgress.swtrace': NoAction - 
+Adding interface s3-eth1 as port 1
+[14:48:17.763] [bmv2] [D] [thread 5276] Adding interface s3-eth1 as port 1
+Adding interface s3-eth2 as port 2
+[14:48:17.812] [bmv2] [D] [thread 5276] Adding interface s3-eth2 as port 2
+Adding interface s3-eth3 as port 3
+[14:48:17.855] [bmv2] [D] [thread 5276] Adding interface s3-eth3 as port 3
+[14:48:17.915] [bmv2] [I] [thread 5276] Starting Thrift server on port 9092
+[14:48:17.917] [bmv2] [I] [thread 5276] Thrift server was started

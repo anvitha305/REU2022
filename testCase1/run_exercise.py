@@ -36,7 +36,7 @@ from mininet.node import Node, Controller
 from mininet.net import Mininet
 from mininet.log import info, setLogLevel
 from router import LinuxRouter
-
+import custom
 
 
 def configureP4Switch(**switch_args):
@@ -145,47 +145,7 @@ class ExerciseRunner:
                                 pcap_dump=self.pcap_dir)
 
         setLogLevel('info')
-        net = Containernet(controller=Controller)
-        # not adding a controller !!! [controller ??? i hardly know  her]
-        #info('*** Adding controller\n')
-        net.addController('c0')
-
-        info('*** Adding routers\n')
-        routers = []
-        for i in range(2):
-            routers.append(net.addHost(name = 'r%s'%(i+1),  ip = '192.168.1.%s/24'%(i+1)))
-
-        info('*** Adding switches\n')
-        switches = []
-        for i in range(3):
-            switches.append(net.addSwitch('s%s'%(i+1)))
-        print(len(switches))
-        info('*** Adding dockers\n')
-        dockers = []
-        for i in range(1,4):
-            dockers.append(net.addDocker('d%s'%(i), ip = '10.0.0.25%s'%(i),dimage="ubuntu:trusty"))
-        print(len(dockers))
-        for d in range(3):
-            net.addLink(dockers[d], switches[d])
-        info('*** Adding hosts\n')
-        hosts = []
-        for h in range(3):
-            for i in range(2):
-                    hosts.append(net.addHost('h%s.%s' % (h+1, i+1)))
-                    #self.addLink(dockers[h], hosts[h*2 + i])
-        info('*** Creating links\n')
-        for h in range(0,6,2):
-            for i in range(3):
-                net.addLink(hosts[h], dockers[i])
-                net.addLink(hosts[h+1], dockers[i])
-        for i in range(len(switches)):
-            for r in routers:
-                net.addLink(switches[i], r, intfName2='r0-eth%s'%(i+1),)
-        net.start()
-        info('*** Running CLI\n')
-        CLI(net)
-        info('*** Stopping network')
-        net.stop()
+        custom.myNetwork()
     def program_switch_p4runtime(self, sw_name, sw_dict):
         """ This method will use P4Runtime to program the switch using the
             content of the runtime JSON file as input.
@@ -308,40 +268,57 @@ class NetworkTopo(Topo):
         net = Containernet(controller=Controller)
         # not adding a controller !!! [controller ??? i hardly know  her]
         #info('*** Adding controller\n')
-        net.addController('c0')
+        info( '*** Adding controller\n' )
+        info( '*** Add switches\n')
+        s1 = net.addSwitch('s1', cls=OVSKernelSwitch)
+        s2 = net.addSwitch('s2', cls=OVSKernelSwitch)
+        s3 = net.addSwitch('s3', cls=OVSKernelSwitch)
+        r1 = net.addHost('r1', cls=Node, ip='0.0.0.0')
+        r1.cmd('sysctl -w net.ipv4.ip_forward=1')
+        r2 = net.addHost('r2', cls=Node, ip='0.0.0.0')
+        r2.cmd('sysctl -w net.ipv4.ip_forward=1')
 
-        info('*** Adding routers\n')
-        routers = []
-        for i in range(2):
-            routers.append(net.addHost(name = 'r%s'%(i+1),  ip = '192.168.1.%s/24'%(i+1)))
+        info( '*** Add hosts\n')
+        h1 = net.addHost('h1', cls=Host, ip='10.0.0.1', defaultRoute=None)
+        h2 = net.addHost('h2', cls=Host, ip='10.0.0.2', defaultRoute=None)
+        h3 = net.addHost('h3', cls=Host, ip='10.0.0.3', defaultRoute=None)
+        h4 = net.addHost('h4', cls=Host, ip='10.0.0.4', defaultRoute=None)
+        h5 = net.addHost('h5', cls=Host, ip='10.0.0.5', defaultRoute=None)
+        h6 = net.addHost('h6', cls=Host, ip='10.0.0.6', defaultRoute=None)
 
-        info('*** Adding switches\n')
-        switches = []
-        for i in range(3):
-            switches.append(net.addSwitch('s%s'%(i+1)))
-        print(len(switches))
-        info('*** Adding dockers\n')
-        dockers = []
-        for i in range(1,4):
-            dockers.append(net.addDocker('d%s'%(i), ip = '10.0.0.25%s'%(i),dimage="ubuntu:trusty"))
-        print(len(dockers))
-        for d in range(3):
-            net.addLink(dockers[d], switches[d])
-        info('*** Adding hosts\n')
-        hosts = []
-        for h in range(3):
-            for i in range(2):
-                    hosts.append(net.addHost('h%s.%s' % (h+1, i+1)))
-                    #self.addLink(dockers[h], hosts[h*2 + i])
-        info('*** Creating links\n')
-        for h in range(0,6,2):
-            for i in range(3):
-                net.addLink(hosts[h], dockers[i])
-                net.addLink(hosts[h+1], dockers[i])
-        for i in range(len(switches)):
-            for r in routers:
-                net.addLink(switches[i], r, intfName2='r0-eth%s'%(i+1),)
+        info( '*** Add links\n')
+        net.addLink(d3, s3)
+        net.addLink(d1, s1)
+        net.addLink(d2, s2)
+        net.addLink(s1, h1)
+        net.addLink(s1, h2)
+        net.addLink(s3, h5)
+        net.addLink(s3, h6)
+        net.addLink(s2, h3)
+        net.addLink(s2, h4)
+        net.addLink(d1, r1)
+        net.addLink(d1, r2)
+        net.addLink(r1, r2)
+        net.addLink(d3, r1)
+        net.addLink(d3, r2)
+        net.addLink(d2, r2)
+        net.addLink(d2, r1)
 
+        info( '*** Starting network\n')
+        net.build()
+        info( '*** Starting controllers\n')
+        for controller in net.controllers:
+            controller.start()
+
+        info( '*** Starting switches\n')
+        net.get('s1').start([])
+        net.get('s2').start([])
+        net.get('s3').start([])
+
+        info( '*** Post configure switches and hosts\n')
+
+        CLI(net)
+        net.stop()
 
 if __name__ == '__main__':
     # from mininet.log import setLogLevel

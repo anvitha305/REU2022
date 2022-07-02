@@ -1,0 +1,195 @@
+{
+    "application": {
+        "dpctl": "",
+        "ipBase": "10.0.0.0/8",
+        "netflow": {
+            "nflowAddId": "0",
+            "nflowTarget": "",
+            "nflowTimeout": "600"
+        },
+        "openFlowVersions": {
+            "ovsOf10": "1",
+            "ovsOf11": "0",
+            "ovsOf12": "0",
+            "ovsOf13": "0"
+        },
+        "sflow": {
+            "sflowHeader": "128",
+            "sflowPolling": "30",
+            "sflowSampling": "400",
+            "sflowTarget": ""
+        },
+        "startCLI": "0",
+        "switchType": "ovs",
+        "terminalType": "xterm"
+    },
+    "controllers": [
+        {
+            "opts": {
+                "controllerProtocol": "tcp",
+                "controllerType": "ref",
+                "hostname": "c0",
+                "remoteIP": "127.0.0.1",
+                "remotePort": 6633
+            },
+            "x": "251.0",
+            "y": "87.0"
+        }
+    ],
+    "hosts": [
+        {
+            "number": "0",
+            "opts": {
+                "dimage": "ubuntu:trusty",
+                "hostname": "d2",
+                "nodeNum": 0,
+                "nodeType": "Docker",
+                "sched": "host",
+                "startCommand": "/bin/bash"
+            },
+            "x": "429.0",
+            "y": "433.0"
+        },
+        {
+            "number": "0",
+            "opts": {
+                "dimage": "ubuntu:trusty",
+                "hostname": "d3",
+                "nodeNum": 0,
+                "nodeType": "Docker",
+                "sched": "host",
+                "startCommand": "/bin/bash"
+            },
+            "x": "421.0",
+            "y": "122.0"
+        },
+        {
+            "number": "6",
+            "opts": {
+                "dimage": "ubuntu:trusty",
+                "hostname": "d1",
+                "nodeNum": 6,
+                "nodeType": "Docker",
+                "startCommand": "/bin/bash"
+            },
+            "x": "47.0",
+            "y": "292.0"
+        }
+    ],
+    "links": [
+        {
+            "dest": "s3",
+            "opts": {},
+            "src": "d3"
+        },
+        {
+            "dest": "r4",
+            "opts": {},
+            "src": "s1"
+        },
+        {
+            "dest": "r4",
+            "opts": {},
+            "src": "s3"
+        },
+        {
+            "dest": "r5",
+            "opts": {},
+            "src": "r4"
+        },
+        {
+            "dest": "d2",
+            "opts": {},
+            "src": "s2"
+        },
+        {
+            "dest": "r5",
+            "opts": {},
+            "src": "s1"
+        },
+        {
+            "dest": "r5",
+            "opts": {},
+            "src": "s3"
+        },
+        {
+            "dest": "s2",
+            "opts": {},
+            "src": "r5"
+        },
+        {
+            "dest": "s2",
+            "opts": {},
+            "src": "r4"
+        },
+        {
+            "dest": "d1",
+            "opts": {},
+            "src": "s1"
+        }
+    ],
+    "switches": [
+        {
+            "number": "1",
+            "opts": {
+                "controllers": [
+                    "c0"
+                ],
+                "hostname": "s1",
+                "nodeNum": 1,
+                "switchType": "default"
+            },
+            "x": "102.0",
+            "y": "184.0"
+        },
+        {
+            "number": "2",
+            "opts": {
+                "controllers": [
+                    "c0"
+                ],
+                "hostname": "s2",
+                "nodeNum": 2,
+                "switchType": "default"
+            },
+            "x": "413.0",
+            "y": "340.0"
+        },
+        {
+            "number": "3",
+            "opts": {
+                "controllers": [
+                    "c0"
+                ],
+                "hostname": "s3",
+                "nodeNum": 3,
+                "switchType": "default"
+            },
+            "x": "383.0",
+            "y": "36.0"
+        },
+        {
+            "number": "4",
+            "opts": {
+                "controllers": [],
+                "hostname": "r4",
+                "nodeNum": 4,
+                "switchType": "legacyRouter"
+            },
+            "x": "206.0",
+            "y": "193.0"
+        },
+        {
+            "number": "5",
+            "opts": {
+                "controllers": [],
+                "hostname": "r5",
+                "nodeNum": 5,
+                "switchType": "legacyRouter"
+            },
+            "x": "224.0",
+            "y": "385.0"
+        }
+    ],
+    "version": "2"
+}
