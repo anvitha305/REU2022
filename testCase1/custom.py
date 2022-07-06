@@ -23,67 +23,70 @@ def myNetwork():
                       protocol='tcp',
                       port=6633)
 
-    info( '*** Add switches\n')
-    s1 = net.addSwitch('s1', cls=OVSKernelSwitch)
-    s2 = net.addSwitch('s2', cls=OVSKernelSwitch)
-    s3 = net.addSwitch('s3', cls=OVSKernelSwitch)
-    r4 = net.addHost('r4', cls=Node, ip='0.0.1.0')
-    r4.cmd('sysctl -w net.ipv4.ip_forward=1')
-    r5 = net.addHost('r5', cls=Node, ip='0.0.2.0')
-    r5.cmd('sysctl -w net.ipv4.ip_forward=1')
-    d2 = net.addDocker('d2', ip = '10.0.2.10/24',mac="00:00:00:00:00:02", dimage="ubuntu:trusty")
-    d3 = net.addDocker('d3', ip = '10.0.3.10/24',mac="00:00:00:00:00:03", dimage="ubuntu:trusty")
+    switches = []
+    for i in range(3):
+        switches.append(net.addSwitch('s%s'%(i+1), cls=OVSKernelSwitch))
+
+    info( '*** Add routers\n')
+    r1 = net.addHost('r1', cls=Node, ip='0.0.0.0/24')
+    r1.cmd('sysctl -w net.ipv4.ip_forward=1')
+    r2 = net.addHost('r2', cls=Node, ip='0.1.0.0/24')
+    r2.cmd('sysctl -w net.ipv4.ip_forward=1')
+
+    dockers=[]
+    dArray=[]
+    for i in range(3):
+        dArray.append('10.0.%s.10/24'%(i+1))
+        dockers.append(net.addDocker('d%s'%(i+1), ip='10.0.%s.10/24'%(i+1), dimage="ubuntu:trusty"))
 
     info( '*** Add hosts\n')
-    h1 = net.addHost('h1', cls=Host, ip='10.0.0.1')
-    h2 = net.addHost('h2', cls=Host, ip='10.0.0.2')
-    h3 = net.addHost('h3', cls=Host, ip='10.0.0.3')
-    h4 = net.addHost('h4', cls=Host, ip='10.0.0.4')
-    h5 = net.addHost('h5', cls=Host, ip='10.0.0.5')
-    h6 = net.addHost('h6', cls=Host, ip='10.0.0.6')
+    hosts = []
+    hArray = []
+    for i in range(6):
+        hArray.append('10.0.0.%s'%(i+1))
+        hosts.append(net.addHost('h%s'%(i+1), cls=Host, ip='10.0.0.%s'%(i+1), defaultRoute='via 0.0.0.0'))
 
     info( '*** Add links\n')
-    net.addLink(s1, h1)
-    net.addLink(s1, h2)
-    net.addLink(s2, h3)
-    net.addLink(s2, h4)
-    net.addLink(s3, h5)
-    net.addLink(s3, h6)
-    net.addLink(s1, r4)
-    net.addLink(s1, r5)
-    net.addLink(r4, r5, params2={ 'ip' : '172.16.0.3/12'},intfName2='r5-eth6')
-    net.addLink(s1, r4,params2={ 'ip' : '172.16.0.1/12'},intfName2='r4-eth5')
-    net.addLink(s1, r5,params2={ 'ip' : '172.16.0.2/12'},intfName2='r5-eth5')
-    net.addLink(s2, r4)
-    net.addLink(s2, r5)
-    net.addLink(s3, r4)
-    net.addLink(s3, r5)
-    net.addLink(s2, d2)
-    net.addLink(s3,d3)
-
+    for i in range(len(hosts)):
+        net.addLink(hosts[i],switches[i//2])
+    for s in range(len(switches)):
+        net.addLink(switches[s], r1, intfName2='r1-eth%s'%(s), params2={'ip':'0.0.%s.0/24'%(s)})
+        net.addLink(switches[s], r2, intfName2='r2-eth%s'%(s), params2={'ip':'0.1.%s.0/24'%(s)})
+    for switch, docker in zip(switches, dockers):
+        net.addLink(switch, docker)
+    for docker in range(len(dockers)):
+        r1.cmd("ip addr add 10.0.%s.10/24 brd + dev r1-eth2"%(docker+1))
+        r2.cmd("ip addr add 10.0.%s.10/24 brd + dev r2-eth2"%(docker+1))
+        for h in range(1, len(hosts)+1, 2):
+            dockers[docker].cmd("ip addr add 10.0.0.%s/24 brd + dev eth0"%(h))
+            dockers[docker].cmd("ip addr add 10.0.0.%s/24 brd + dev lo"%(h+1))
+            dockers[docker].cmd("ip addr add 0.1.0.0/24 dev lo")
+    for host in range(len(hosts)):
+        for doc in dArray:
+            hosts[host].cmd("ip addr add "+doc+"/24 dev lo")
+        hosts[host].cmd("ip addr add 10.0.1.10/24 dev lo")
+        hosts[host].cmd("ip addr add 10.0.2.10/24 dev lo")
+        hosts[host].cmd("ip addr add 10.0.3.10/24 dev lo")
+        hosts[host].cmd("ip addr add 0.1.0.0/24 dev lo")
+    for h in hArray:
+        r1.cmd("ip addr add "+h+"/24 dev lo")
+        r2.cmd("ip addr add "+h+"/24 dev lo")
+        for host in hosts:
+            print(host.cmd("ip addr add "+h+"/24 dev lo"))
+    for docker in range(len(dockers)):
+        dockers[docker].cmd("ip addr add 10.0.1.10/24 dev lo")
+        dockers[docker].cmd("ip addr add 10.0.2.10/24 dev lo")
+        dockers[docker].cmd("ip addr add 10.0.3.10/24 dev lo")
+    r1.cmd("ip addr add 0.1.0.0/24 brd + dev r1-eth2")
 
     info( '*** Starting network\n')
     net.build()
 
     info( '*** Starting switches\n')
     c0.start()
-    net.get('s1').start([c0])
-    net.get('s2').start([c0])
-    net.get('s3').start([c0])
+    for switch in switches:
+        switch.start([c0])
 
-    info( '*** Post configure switches and hosts\n')
-    r4.cmd("ifconfig r4-eth3 0")
-    r4.cmd("ifconfig r4-eth4 0")
-    r4.cmd("ip addr add 10.0.2.10/24 brd + dev r4-eth4")
-    r4.cmd("ip addr add 10.0.3.10/24 brd + dev r4-eth3")
-    r4.cmd("ip addr add 0.0.2.0/24 brd + dev r4-eth4")
-    r5.cmd("ifconfig r5-eth3 0")
-    r4.cmd("ifconfig r5-eth5 0")
-    r5.cmd("ip addr add 0.0.1.0/24 brd + dev r5-eth4")
-    r5.cmd("ip addr add 10.0.2.10/24 brd + dev r5-eth3")
-    r5.cmd("ip addr add 10.0.3.10/24 brd + dev r5-eth5")
-    d2.cmd("ip route add 10.0.2.1")
-    d3.cmd("ip route add 10.0.3.1")
     CLI(net)
     net.stop()
 
