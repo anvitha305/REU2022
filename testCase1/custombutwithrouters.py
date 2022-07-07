@@ -20,7 +20,7 @@ def myNetwork():
     info( '*** Adding controller\n' )
     c0=net.addController(name='c0',
                       controller=Controller,
-                      protocol='rtp',
+                      protocol='tcp',
                       port=6633)
     # adding switches to the configuration
     switches = []
@@ -29,8 +29,10 @@ def myNetwork():
 
     info( '*** Add routers\n')
     #configures ordinary hosts to be routers
-    s4 = net.addSwitch('s4', cls=OVSKernelSwitch, ip='0.0.0.0/24')
-    s5 = net.addSwitch('s5', cls=OVSKernelSwitch, ip='0.1.0.0/24')
+    r1 = net.addHost('r1', cls=Node, ip='0.0.0.0/24')
+    r1.cmd('sysctl -w net.ipv4.ip_forward=1')
+    r2 = net.addHost('r2', cls=Node, ip='0.1.0.0/24')
+    r2.cmd('sysctl -w net.ipv4.ip_forward=1')
 
     dockers=[]
     dArray=[]
@@ -48,9 +50,14 @@ def myNetwork():
     info( '*** Add links\n')
     for i in range(len(hosts)):
         net.addLink(hosts[i],switches[i//2])
+    for s in range(len(switches)):
+        net.addLink(switches[s], r1, intfName2='r1-eth%s'%(s), params2={'ip':'0.0.%s.0/24'%(s)})
+        net.addLink(switches[s], r2, intfName2='r2-eth%s'%(s), params2={'ip':'0.1.%s.0/24'%(s)})
     for switch, docker in zip(switches, dockers):
         net.addLink(switch, docker)
     for docker in range(len(dockers)):
+        r1.cmd("ip addr add 10.0.%s.10/24 brd + dev r1-eth2"%(docker+1))
+        r2.cmd("ip addr add 10.0.%s.10/24 brd + dev r2-eth2"%(docker+1))
         for h in range(1, len(hosts)+1, 2):
             dockers[docker].cmd("ip addr add 10.0.0.%s/24 brd + dev eth0"%(h))
             dockers[docker].cmd("ip addr add 10.0.0.%s/24 brd + dev lo"%(h+1))
@@ -66,9 +73,12 @@ def myNetwork():
         hosts[host].cmd("ip addr add 10.0.3.10/24 dev lo")
         hosts[host].cmd("ip addr add 0.1.0.0/24 dev lo")
     for h in hArray:
+        r1.cmd("ip addr add "+h+"/24 dev lo")
+        r2.cmd("ip addr add "+h+"/24 dev lo")
         for host in hosts:
             host.cmd("ip addr add "+h+"/24 dev lo")
 
+    r1.cmd("ip addr add 0.1.0.0/24 brd + dev r1-eth2")
 
     info( '*** Starting network\n')
     net.build()
