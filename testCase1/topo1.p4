@@ -216,18 +216,6 @@ control MyIngress(inout headers hdr,
         hdr.tigercy.dstAddr = dstAddr;
         hdr.tigercy.ttl = hdr.tigercy.ttl - 1;
     }
-    
-    action rtp_forward(rtpAddr_t srcAddr, rtpAddr_t dstAddr, egressSpec_t port) {
-        if (host == 1) {
-            tigercy_forward(dstAddr, port);
-        }
-        else {
-            standard_metadata.egress_spec = port;
-            hdr.rtp.srcAddr = hdr.rtp.dstAddr;
-            hdr.rtp.dstAddr = dstAddr;
-        }
-    }
-
     table tigercy_lpm {
         key = {
             hdr.tigercy.dstAddr: lpm;
@@ -264,18 +252,8 @@ control MyIngress(inout headers hdr,
         size = 1024;
         default_action = drop();
     }
-    
-    table rtp_lpm {
-        key = {
-            hdr.rtp.dstAddr: lpm;
-        }
-        actions = {
-            rtp_forward;
-            drop;
-        }
-        size = 1024;
-        default_action = drop();
-    }
+
+  
 
     apply {
         if (hdr.tigercy.isValid()) {
