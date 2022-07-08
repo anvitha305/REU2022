@@ -1,0 +1,85 @@
+Created by Wireshark 3.2.3 (Git v3.2.3 packaged as 3.2.3-1)
+
+File
+
+Name:
+/tmp/wireshark_any_20220708165441_0IfJnT.pcapng
+Length:
+92 MB
+Hash (SHA256):
+2fb89748268c3086e1be7b4c3b5c174763bfe2157f9f13314545292f9becaea7
+Hash (RIPEMD160):
+082967ca62d92ba3308899aa66c6c3c6a4864af7
+Hash (SHA1):
+ca47fc84b568a81c0d6311795f93e88ccb57aa81
+Format:
+Wireshark/... - pcapng
+Encapsulation:
+Linux cooked-mode capture
+
+Time
+
+First packet:
+2022-07-08 16:54:41
+Last packet:
+2022-07-08 17:00:33
+Elapsed:
+00:05:51
+
+Capture
+
+Hardware:
+Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz (with SSE4.2)
+OS:
+Linux 5.4.0-120-generic
+Application:
+Dumpcap (Wireshark) 3.2.3 (Git v3.2.3 packaged as 3.2.3-1)
+
+Interfaces
+
+Interface
+Dropped packets
+Capture filter
+Link type
+Packet size limit
+any
+Unknown
+none
+Linux cooked-mode capture
+262144 bytes
+
+Statistics
+
+Measurement
+Captured
+Displayed
+Marked
+Packets
+46965
+46965 (100.0%)
+—
+Time span, s
+351.434
+351.434
+—
+Average pps
+133.6
+133.6
+—
+Average packet size, B
+1946
+1946
+—
+Bytes
+91380764
+91380764 (100.0%)
+0
+Average bytes/s
+260 k
+260 k
+—
+Average bits/s
+2,080 k
+2,080 k
+—
+
