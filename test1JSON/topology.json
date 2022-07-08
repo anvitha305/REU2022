@@ -1,0 +1,45 @@
+{
+    "hosts": {
+        "h1": {"ip": "10.0.0.1/24", "mac": "00:00:00:00:00:01",
+               "commands":[ "route add default gw 10.0.0.0 dev eth0",
+                            "ip maddr add 10.0.0.2 dev eth0",
+                            "arp -i eth0 -s 10.0.0.0 00:00:00:00:01:01"]},
+        "h2": {"ip": "10.0.0.2/24", "mac": "00:00:00:00:00:02",
+                "commands":["route add default gw 10.0.0.0 dev eth0",
+                            "ip addr add 10.0.0.1 dev eth0",
+                            "arp -i eth0 -s 10.0.0.0 00:00:00:00:01:02"]},
+        "h3": {"ip": "10.0.0.3/24", "mac": "00:00:00:00:00:03",
+                "commands":["route add default gw 10.0.0.0 dev eth0",
+                            "ip addr add 10.0.0.4 dev eth0",
+                            "arp -i eth0 -s 10.0.0.0 00:00:00:00:02:01"]},
+        "h4": {"ip": "10.0.0.4/24", "mac": "00:00:00:00:00:04",
+                "commands":["route add default gw 10.0.10.4 dev eth0",
+                            "ip addr add 10.0.0.3 dev eth0",
+                            "arp -i eth0 -s 10.0.10.4 00:00:00:00:02:02"]},
+        "h5": {"ip": "10.0.0.5/24", "mac": "00:00:00:00:00:05",
+                "commands":["route add default gw 10.0.10.5 dev eth0",
+                            "ip addr add 10.0.0.6 dev eth0",
+                            "arp -i eth0 -s 10.0.10.5 00:00:00:00:03:01"]},
+        "h6": {"ip": "10.0.0.6/24", "mac": "00:00:00:00:00:06",
+                "commands":["route add default gw 10.0.10.6 dev eth0",
+                            "ip addr add 10.0.0.5 dev eth0",
+                            "arp -i eth0 -s 10.0.10.6 00:00:00:00:03:02"]}
+
+    },
+    "switches": {
+        "s1": { "runtime_json" : "s1-runtime.json" },
+        "s2": { "runtime_json" : "s2-runtime.json" },
+        "s3": { "runtime_json" : "s3-runtime.json" },
+        "s4": { "runtime_json" : "s4-runtime.json" },
+        "s5": { "runtime_json" : "s5-runtime.json" }
+    },
+    "dockers": {
+    },
+    "links": [
+        ["h1", "s1-p2"],["h2","s1-p1"],["s1-p3","s4-p4"],["h3","s2-p1"],
+        ["h4", "s2-p2"],["h5","s3-p1"],["h6","s3-p2"],["s2-p3","s4-p3"],
+        ["s3-p3", "s4-p1"],["s4-p2","s5-p1"],["s5-p2","s1-p4"],["s5-p3","s2-p4"],
+        ["s5-p4", "s3-p4"]
+    ]
+
+}

@@ -29,9 +29,10 @@ import p4runtime_lib.simple_controller
 from mininet.cli import CLI
 from mininet.net import Mininet
 from mininet.topo import Topo
+from mininet.node import OVSController
 from p4_mininet import P4Host, P4Switch
 from p4runtime_switch import P4RuntimeSwitch
-
+from mininet.net import Containernet
 
 def configureP4Switch(**switch_args):
     """ Helper class that is called by mininet to initialize
@@ -68,15 +69,17 @@ def configureP4Switch(**switch_args):
 class ExerciseTopo(Topo):
     """ The mininet topology class for the P4 tutorial exercises.
     """
-    def __init__(self, hosts, switches, links, log_dir, bmv2_exe, pcap_dir, **opts):
+    def __init__(self, hosts, switches, dockers, links, log_dir, bmv2_exe, pcap_dir, **opts):
         Topo.__init__(self, **opts)
         host_links = []
         switch_links = []
-
-        # assumes host always comes first for host<-->switch links
+        docker_links = []
+        sws = []
         for link in links:
             if link['node1'][0] == 'h':
                 host_links.append(link)
+            elif link['node1'][0] == 'd':
+                docker_links.append(link)
             else:
                 switch_links.append(link)
 
@@ -91,7 +94,6 @@ class ExerciseTopo(Topo):
                 # add default switch
                 switchClass = None
             self.addSwitch(sw, log_file="%s/%s.log" %(log_dir, sw), cls=switchClass)
-
         for link in host_links:
             host_name = link['node1']
             sw_name, sw_port = self.parse_switch_node(link['node2'])
@@ -101,13 +103,13 @@ class ExerciseTopo(Topo):
             self.addLink(host_name, sw_name,
                          delay=link['latency'], bw=link['bandwidth'],
                          port2=sw_port)
-
         for link in switch_links:
             sw1_name, sw1_port = self.parse_switch_node(link['node1'])
             sw2_name, sw2_port = self.parse_switch_node(link['node2'])
             self.addLink(sw1_name, sw2_name,
                         port1=sw1_port, port2=sw2_port,
                         delay=link['latency'], bw=link['bandwidth'])
+        self.docker_links = docker_links
 
 
     def parse_switch_node(self, node):
@@ -170,6 +172,7 @@ class ExerciseRunner:
         with open(topo_file, 'r') as f:
             topo = json.load(f)
         self.hosts = topo['hosts']
+        self.dockers = topo['dockers']
         self.switches = topo['switches']
         self.links = self.parse_links(topo['links'])
 
@@ -194,9 +197,9 @@ class ExerciseRunner:
         self.create_network()
         self.net.start()
         sleep(1)
-
         # some programming that must happen after the net has started
         self.program_hosts()
+        self.program_dockers()
         self.program_switches()
 
         # wait for that to finish. Not sure how to do this better
@@ -215,10 +218,10 @@ class ExerciseRunner:
         links = []
         for link in unparsed_links:
             # make sure each link's endpoints are ordered alphabetically
+
             s, t, = link[0], link[1]
             if s > t:
                 s,t = t,s
-
             link_dict = {'node1':s,
                         'node2':t,
                         'latency':'0ms',
@@ -250,12 +253,25 @@ class ExerciseRunner:
                                 log_console=True,
                                 pcap_dump=self.pcap_dir)
 
-        self.topo = ExerciseTopo(self.hosts, self.switches, self.links, self.log_dir, self.bmv2_exe, self.pcap_dir)
+        self.topo = ExerciseTopo(self.hosts, self.switches, self.dockers, self.links, self.log_dir, self.bmv2_exe, self.pcap_dir)
 
-        self.net = Mininet(topo = self.topo,
+
+        self.net = Containernet(topo = self.topo,
                       host = P4Host,
                       switch = defaultSwitchClass,
-                      controller = None)
+                      controller = OVSController)
+
+        docker_links = self.topo.docker_links
+        for link in docker_links:
+            host_name = link['node1'][0:2]
+            sw_name, sw_port = self.topo.parse_switch_node(link['node2'])
+            host_ip = self.dockers[host_name]['ip']
+            host_mac = self.dockers[host_name]['mac']
+            try:
+                self.net.get(host_name)
+            except KeyError:
+                self.net.addDocker(host_name, ip=host_ip, mac=host_mac, dimage="ubuntu:trusty")
+            self.net.addLink(host_name, sw_name, port2=sw_port)
 
     def program_switch_p4runtime(self, sw_name, sw_dict):
         """ This method will use P4Runtime to program the switch using the
@@ -314,7 +330,13 @@ class ExerciseRunner:
                 for cmd in host_info["commands"]:
                     h.cmd(cmd)
 
-
+    def program_dockers(self):
+        """Execute docker commands!!!! """
+        for host_name, host_info in list(self.dockers.items()):
+            h = self.net.get(host_name)
+            if "commands" in host_info:
+                for cmd in host_info["commands"]:
+                    h.cmd(cmd)
     def do_net_cli(self):
         """ Starts up the mininet CLI and prints some helpful output.
 
@@ -322,10 +344,10 @@ class ExerciseRunner:
                 - A mininet instance is stored as self.net and self.net.start() has
                   been called.
         """
-        for s in self.net.switches:
-            s.describe()
-        for h in self.net.hosts:
-            h.describe()
+        # for s in self.net.switches:
+        #     s.describe()
+        # for h in self.net.hosts:
+        #    h.describe()
         self.logger("Starting mininet CLI")
         # Generate a message that will be printed by the Mininet CLI to make
         # interacting with the simple switch a little easier.
