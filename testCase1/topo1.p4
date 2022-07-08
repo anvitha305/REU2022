@@ -216,6 +216,7 @@ control MyIngress(inout headers hdr,
         hdr.tigercy.dstAddr = dstAddr;
         hdr.tigercy.ttl = hdr.tigercy.ttl - 1;
     }
+<<<<<<< HEAD
     
     action rtp_forward(rtpAddr_t srcAddr, rtpAddr_t dstAddr, egressSpec_t port) {
         if (host == 1) {
@@ -228,6 +229,8 @@ control MyIngress(inout headers hdr,
         }
     }
 
+=======
+>>>>>>> parent of 4e825ed (kjdlkdjdslj)
     table tigercy_lpm {
         key = {
             hdr.tigercy.dstAddr: lpm;
@@ -264,6 +267,7 @@ control MyIngress(inout headers hdr,
         size = 1024;
         default_action = drop();
     }
+<<<<<<< HEAD
     
     table rtp_lpm {
         key = {
@@ -276,6 +280,10 @@ control MyIngress(inout headers hdr,
         size = 1024;
         default_action = drop();
     }
+=======
+
+  
+>>>>>>> parent of 4e825ed (kjdlkdjdslj)
 
     apply {
         if (hdr.tigercy.isValid()) {

@@ -1,0 +1,38 @@
+{
+    "target": "bmv2",
+    "p4info": "build/topo1.p4.p4info.txt",
+    "bmv2_json": "build/topo1.json",
+    "table_entries": [
+      {
+        "table": "MyEgress.swtrace",
+        "default_action": true,
+        "action_name": "MyEgress.add_swtrace",
+        "action_params": {
+           "swid": 2
+         }
+      },
+      {
+        "table": "MyIngress.ipv4_lpm",
+        "match": {
+          "hdr.ipv4.dstAddr": ["10.0.2.21", 32]
+        },
+        "action_name": "MyIngress.ipv4_forward",
+        "action_params": {
+          "dstAddr": "08:00:00:00:02:21",
+          "port": 1
+        }
+      },
+      {
+        "table": "MyIngress.ipv4_lpm",
+        "match": {
+          "hdr.ipv4.dstAddr": ["10.0.2.22", 32]
+        },
+        "action_name": "MyIngress.ipv4_forward",
+        "action_params": {
+          "dstAddr": "08:00:00:00:02:22",
+          "port": 2
+        }
+      }
+    ]
+  }
+  

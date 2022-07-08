@@ -12,6 +12,7 @@ from subprocess import call
 from mininet.net import Containernet
 
 def myNetwork():
+<<<<<<< HEAD
 
     net = Containernet( topo=None,
                    build=False,
@@ -40,6 +41,8 @@ from subprocess import call
 from mininet.net import Containernet
 
 def myNetwork():
+=======
+>>>>>>> parent of 4e825ed (kjdlkdjdslj)
     # initializing the network topology with an ip base but no topo base.
     net = Containernet( topo=None,
                    build=False,
@@ -48,7 +51,11 @@ def myNetwork():
     info( '*** Adding controller\n' )
     c0=net.addController(name='c0',
                       controller=Controller,
+<<<<<<< HEAD
                       protocol='rtp',
+=======
+                      protocol='tcp',
+>>>>>>> parent of 4e825ed (kjdlkdjdslj)
                       port=6633)
     # adding switches to the configuration
     switches = []
@@ -56,6 +63,7 @@ def myNetwork():
         switches.append(net.addSwitch('s%s'%(i+1), cls=OVSKernelSwitch))
 
     info( '*** Add routers\n')
+<<<<<<< HEAD
     r1 = net.addHost('r1', cls=Node, ip='0.0.0.0/24')
     r1.cmd('sysctl -w net.ipv4.ip_forward=1')
     r2 = net.addHost('r2', cls=Node, ip='0.1.0.0/24')
@@ -123,6 +131,8 @@ if __name__ == '__main__':
     myNetwork()
 
     info( '*** Add routers\n')
+=======
+>>>>>>> parent of 4e825ed (kjdlkdjdslj)
     #configures ordinary hosts to be routers
     r1 = net.addHost('r1', cls=Node, ip='0.0.0.0/24')
     r1.cmd('sysctl -w net.ipv4.ip_forward=1')
