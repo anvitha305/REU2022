@@ -16,10 +16,11 @@ const bit<16> TYPE_TIGER = 0xD00F;
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
-typedef bit<16> tigercyAddr_t;
+typedef bit<32> tigercyAddr_t;
 typedef bit<128> ip6Addr_t;
 typedef bit<32> switchID_t;
 typedef bit<32> qdepth_t;
+typedef bit<32> rtpAddr_t;
 
 header ethernet_t {
     macAddr_t dstAddr;
@@ -40,6 +41,21 @@ header ipv4_t {
     bit<16>   hdrChecksum;
     ip4Addr_t srcAddr;
     ip4Addr_t dstAddr;
+}
+
+header rtp_t {
+    bit<2>      version;
+    bit<1>      P;
+    bit<1>      X;
+    bit<4>      CC;
+    bit<1>      M;
+    bit<7>      PT;
+    bit<16>     SequenceNumber;
+    bit<32>     timestamp;
+    bit<32>     SSRC;
+    bit<32>     CSRC;
+    rtpAddr_t   srcAddr;
+    rtpAddr_t   dstAddr;
 }
 
 header tigercy_t {
@@ -79,8 +95,9 @@ struct parser_metadata_t {
 }
 
 struct metadata {
-    ingress_metadata_t   ingress_metadata;
-    parser_metadata_t   parser_metadata;
+    ingress_metadata_t      ingress_metadata;
+    parser_metadata_t       parser_metadata;
+    bit<4>                  host;
 }
 
 struct headers {
@@ -199,6 +216,17 @@ control MyIngress(inout headers hdr,
         hdr.tigercy.dstAddr = dstAddr;
         hdr.tigercy.ttl = hdr.tigercy.ttl - 1;
     }
+    
+    action rtp_forward(rtpAddr_t srcAddr, rtpAddr_t dstAddr, egressSpec_t port) {
+        if (host == 1) {
+            tigercy_forward(dstAddr, port);
+        }
+        else {
+            standard_metadata.egress_spec = port;
+            hdr.rtp.srcAddr = hdr.rtp.dstAddr;
+            hdr.rtp.dstAddr = dstAddr;
+        }
+    }
 
     table tigercy_lpm {
         key = {
@@ -231,6 +259,18 @@ control MyIngress(inout headers hdr,
         }
         actions = {
             ipv6_forward;
+            drop;
+        }
+        size = 1024;
+        default_action = drop();
+    }
+    
+    table rtp_lpm {
+        key = {
+            hdr.rtp.dstAddr: lpm;
+        }
+        actions = {
+            rtp_forward;
             drop;
         }
         size = 1024;
