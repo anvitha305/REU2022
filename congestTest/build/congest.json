@@ -100,6 +100,24 @@
         ["swid", 32, false],
         ["qdepth", 32, false]
       ]
+    },
+    {
+      "name" : "rtp_t",
+      "id" : 8,
+      "fields" : [
+        ["version", 2, false],
+        ["P", 1, false],
+        ["X", 1, false],
+        ["CC", 4, false],
+        ["M", 1, false],
+        ["PT", 7, false],
+        ["SequenceNumber", 16, false],
+        ["timestamp", 32, false],
+        ["SSRC", 32, false],
+        ["CSRC", 32, false],
+        ["srcAddr", 32, false],
+        ["dstAddr", 32, false]
+      ]
     }
   ],
   "headers" : [
@@ -212,6 +230,13 @@
       "name" : "swtraces[8]",
       "id" : 15,
       "header_type" : "switch_t",
+      "metadata" : false,
+      "pi_omit" : true
+    },
+    {
+      "name" : "rtp",
+      "id" : 16,
+      "header_type" : "rtp_t",
       "metadata" : false,
       "pi_omit" : true
     }
