@@ -141,9 +141,18 @@ control MyIngress(inout headers hdr,
         standard_metadata.egress_spec = port;
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
     }
-    table ecmp_group {
+    table ecmp_group_1 {
         key = {
             hdr.ipv4.dstAddr: lpm;
+        }
+        actions = {
+            drop;
+            set_ecmp_select;
+        }
+        size = 1024;
+    }
+    table ecmp_group_2 {
+        key = {
             hdr.rtp.dstAddr: lpm;
         }
         actions = {
@@ -165,11 +174,11 @@ control MyIngress(inout headers hdr,
 
     apply {
         if (hdr.ipv4.isValid() && hdr.ipv4.ttl > 0) {
-            ecmp_group.apply();
+            ecmp_group_1.apply();
             ecmp_nhop.apply();
         }
         if (hdr.rtp.isValid()) {
-            ecmp_group.apply();
+            ecmp_group_2.apply();
             ecmp_nhop.apply();
         }
     }
