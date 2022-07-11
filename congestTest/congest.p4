@@ -4,8 +4,7 @@
 
 const bit<8>  UDP_PROTOCOL = 0x11;
 const bit<16> TYPE_IPV4 = 0x800;
-const bit<16> TYPE_IPV6 = 0x86dd;
-const bit<16> TYPE_TIGER = 0xD00F;
+const bit<16> TYPE_RTP = 0x88ff;
 
 #define MAX_HOPS 9
 
@@ -58,25 +57,6 @@ header rtp_t {
     rtpAddr_t   dstAddr;
 }
 
-header tigercy_t {
-    bit<4>        version;
-    bit<8>        ttl;
-    bit<20>       fragOffset;
-    tigercyAddr_t srcAddr;
-    tigercyAddr_t dstAddr;
-}
-
-header ipv6_t {
-    bit<4> version;
-    bit<8> trafficClass;
-    bit<20> flowLabel;
-    bit<16> payload_len;
-    bit<8> next_header;
-    bit<8> hop_limit;
-    ip6Addr_t srcAddr;
-    ip6Addr_t dstAddr;
-}
-
 header mri_t {
     bit<16>  count;
 }
@@ -103,10 +83,9 @@ struct metadata {
 struct headers {
     ethernet_t         ethernet;
     ipv4_t             ipv4;
-    ipv6_t             ipv6;
     mri_t              mri;
     switch_t[MAX_HOPS] swtraces;
-    tigercy_t          tigercy;
+    rtp_t              rtp;
 }
 
 error { IPHeaderTooShort }
@@ -127,13 +106,13 @@ parser MyParser(packet_in packet,
     state parse_ethernet {
         packet.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType) {
-            TYPE_TIGER: parse_tigercy;
+            TYPE_RTP: parse_rtp;
             default: accept;
         }
     }
-
-    state parse_tigercy {
-        packet.extract(hdr.tigercy);
+    
+    state parse_rtp {
+        packet.extract(hdr.rtp);
         transition select(hdr.ethernet.etherType) {
             TYPE_IPV6: parse_ipv6;
             default: accept;
@@ -196,104 +175,55 @@ control MyIngress(inout headers hdr,
     action drop() {
         mark_to_drop(standard_metadata);
     }
-
-    action ipv4_forward(macAddr_t dstAddr, egressSpec_t port) {
+    
+    action set_ecmp_select(bit<16> ecmp_base, bit<32> ecmp_count) {
+        hash(meta.ecmp_select,
+            HashAlgorithm.crc16,
+            ecmp_base,
+            { hdr.ipv4.srcAddr,
+              hdr.ipv4.dstAddr,
+              hdr.ipv4.protocol,
+              hdr.rtp.srcPort,
+              hdr.rtp.dstPort },
+            ecmp_count);
+    }
+    action set_nhop(bit<48> nhop_dmac, bit<32> nhop_ipv4, bit<32> nhop_rtp, bit<9> port) {
+        hdr.ethernet.dstAddr = nhop_dmac;
+        hdr.ipv4.dstAddr = nhop_ipv4;
+        hdr.rtp.dstAddr = nhop_rtp;
         standard_metadata.egress_spec = port;
-        hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
-        hdr.ethernet.dstAddr = dstAddr;
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
     }
-
-    action ipv6_forward(macAddr_t dstAddr, egressSpec_t port) {
-        standard_metadata.egress_spec = port;
-        hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
-        hdr.ethernet.dstAddr = dstAddr;
-    }
-
-    action tigercy_forward(tigercyAddr_t dstAddr, egressSpec_t port) {
-        standard_metadata.egress_spec = port;
-        hdr.tigercy.srcAddr = hdr.tigercy.dstAddr;
-        hdr.tigercy.dstAddr = dstAddr;
-        hdr.tigercy.ttl = hdr.tigercy.ttl - 1;
-    }
-<<<<<<< HEAD
-    
-    action rtp_forward(rtpAddr_t srcAddr, rtpAddr_t dstAddr, egressSpec_t port) {
-        if (host == 1) {
-            tigercy_forward(dstAddr, port);
-        }
-        else {
-            standard_metadata.egress_spec = port;
-            hdr.rtp.srcAddr = hdr.rtp.dstAddr;
-            hdr.rtp.dstAddr = dstAddr;
-        }
-    }
-
-=======
->>>>>>> parent of 4e825ed (kjdlkdjdslj)
-    table tigercy_lpm {
-        key = {
-            hdr.tigercy.dstAddr: lpm;
-        }
-        actions = {
-            tigercy_forward;
-            drop;
-        }
-        size = 1024;
-        default_action = drop();
-    }
-
-    table ipv4_lpm {
+    table ecmp_group {
         key = {
             hdr.ipv4.dstAddr: lpm;
-        }
-        actions = {
-            ipv4_forward;
-            drop;
-            NoAction;
-        }
-        size = 1024;
-        default_action = NoAction();
-    }
-
-    table ipv6_lpm {
-        key = {
-            hdr.ipv6.dstAddr: lpm;
-        }
-        actions = {
-            ipv6_forward;
-            drop;
-        }
-        size = 1024;
-        default_action = drop();
-    }
-<<<<<<< HEAD
-    
-    table rtp_lpm {
-        key = {
             hdr.rtp.dstAddr: lpm;
         }
         actions = {
-            rtp_forward;
             drop;
+            set_ecmp_select;
         }
         size = 1024;
-        default_action = drop();
     }
-=======
-
-  
->>>>>>> parent of 4e825ed (kjdlkdjdslj)
+    table ecmp_nhop {
+        key = {
+            meta.ecmp_select: exact;
+        }
+        actions = {
+            drop;
+            set_nhop;
+        }
+        size = 2;
+    }
 
     apply {
-        if (hdr.tigercy.isValid()) {
-            tigercy_lpm.apply();
+        if (hdr.ipv4.isValid() && hdr.ipv4.ttl > 0) {
+            ecmp_group.apply();
+            ecmp_nhop.apply();
         }
-        if (hdr.ipv4.isValid()) {
-            ipv4_lpm.apply();
-        }
-        if (hdr.ipv6.isValid()) {
-            ipv6_lpm.apply();
+        if (hdr.rtp.isValid()) {
+            ecmp_group.apply();
+            ecmp_nhop.apply();
         }
     }
 }
@@ -305,33 +235,25 @@ control MyIngress(inout headers hdr,
 control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
-    action add_swtrace(switchID_t swid) {
-        hdr.mri.count = hdr.mri.count + 1;
-        hdr.swtraces.push_front(1);
-        // According to the P4_16 spec, pushed elements are invalid, so we need
-        // to call setValid(). Older bmv2 versions would mark the new header(s)
-        // valid automatically (P4_14 behavior), but starting with version 1.11,
-        // bmv2 conforms with the P4_16 spec.
-        hdr.swtraces[0].setValid();
-        hdr.swtraces[0].swid = swid;
-        hdr.swtraces[0].qdepth = (qdepth_t)standard_metadata.deq_qdepth;
 
-        hdr.ipv4.ihl = hdr.ipv4.ihl + 2;
-        hdr.ipv4.totalLen = hdr.ipv4.totalLen + 8;
+    action rewrite_mac(bit<48> smac) {
+        hdr.ethernet.srcAddr = smac;
     }
-
-    table swtrace {
+    action drop() {
+        mark_to_drop(standard_metadata);
+    }
+    table send_frame {
+        key = {
+            standard_metadata.egress_port: exact;
+        }
         actions = {
-            add_swtrace;
-            NoAction;
+            rewrite_mac;
+            drop;
         }
-        default_action = NoAction();
+        size = 256;
     }
-
     apply {
-        if (hdr.mri.isValid()) {
-            swtrace.apply();
-        }
+        send_frame.apply();
     }
 }
 
@@ -369,7 +291,6 @@ control MyDeparser(packet_out packet, in headers hdr) {
         packet.emit(hdr.ipv4);
         packet.emit(hdr.mri);
         packet.emit(hdr.swtraces);
-        packet.emit(hdr.ipv6);
     }
 }
 
