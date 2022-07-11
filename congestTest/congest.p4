@@ -97,7 +97,7 @@ parser MyParser(packet_in packet,
     }
 
     state parse_ipv4 {
-        packet.extract(hdr.ipv4):
+        packet.extract(hdr.ipv4);
         transition accept;
     }
 }
