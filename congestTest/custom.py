@@ -41,7 +41,6 @@ from subprocess import call
 from mininet.net import Containernet
 
 def myNetwork():
-    =======
     parent of 4e825ed (kjdlkdjdslj)
     # initializing the network topology with an ip base but no topo base.
     net = Containernet( topo=None,
@@ -53,7 +52,6 @@ def myNetwork():
                       controller=Controller,
     HEAD
                       protocol='rtp',
-    =======
                       protocol='tcp',
     parent of 4e825ed (kjdlkdjdslj)
                       port=6633)
@@ -131,7 +129,6 @@ if __name__ == '__main__':
     myNetwork()
 
     info( '*** Add routers\n')
-    =======
     parent of 4e825ed (kjdlkdjdslj)
     #configures ordinary hosts to be routers
     r1 = net.addHost('r1', cls=Node, ip='0.0.0.0/24')
