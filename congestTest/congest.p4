@@ -161,7 +161,17 @@ control MyIngress(inout headers hdr,
         }
         size = 1024;
     }
-    table ecmp_nhop {
+    table ecmp_nhop_1 {
+        key = {
+            meta.ecmp_select: exact;
+        }
+        actions = {
+            drop;
+            set_nhop;
+        }
+        size = 2;
+    }
+     table ecmp_nhop_2 {
         key = {
             meta.ecmp_select: exact;
         }
@@ -175,11 +185,11 @@ control MyIngress(inout headers hdr,
     apply {
         if (hdr.ipv4.isValid() && hdr.ipv4.ttl > 0) {
             ecmp_group_1.apply();
-            ecmp_nhop.apply();
+            ecmp_nhop_1.apply();
         }
         if (hdr.rtp.isValid()) {
             ecmp_group_2.apply();
-            ecmp_nhop.apply();
+            ecmp_nhop_2.apply();
         }
     }
 }
