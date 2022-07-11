@@ -77,7 +77,7 @@ struct parser_metadata_t {
 struct metadata {
     ingress_metadata_t      ingress_metadata;
     parser_metadata_t       parser_metadata;
-    bit<4>                  host;
+    bit<14>                 ecmp_select;
 }
 
 struct headers {
@@ -175,8 +175,8 @@ control MyIngress(inout headers hdr,
             { hdr.ipv4.srcAddr,
               hdr.ipv4.dstAddr,
               hdr.ipv4.protocol,
-              hdr.rtp.srcPort,
-              hdr.rtp.dstPort },
+              hdr.rtp.srcAddr,
+              hdr.rtp.dstAddr },
             ecmp_count);
     }
     action set_nhop(bit<48> nhop_dmac, bit<32> nhop_ipv4, bit<32> nhop_rtp, bit<9> port) {
