@@ -35,7 +35,7 @@ from p4runtime_switch import P4RuntimeSwitch
 from mininet.net import Containernet
 from mininet.node import Node, Controller
 from mininet.log import info, setLogLevel
-import custom
+#import custom
 
 
 def configureP4Switch(**switch_args):
