@@ -15,8 +15,6 @@ const bit<16> TYPE_RTP = 0x88ff;
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
-typedef bit<32> tigercyAddr_t;
-typedef bit<128> ip6Addr_t;
 typedef bit<32> switchID_t;
 typedef bit<32> qdepth_t;
 typedef bit<32> rtpAddr_t;
@@ -57,34 +55,13 @@ header rtp_t {
     rtpAddr_t   dstAddr;
 }
 
-header mri_t {
-    bit<16>  count;
-}
-
-header switch_t {
-    switchID_t  swid;
-    qdepth_t    qdepth;
-}
-
-struct ingress_metadata_t {
-    bit<16>  count;
-}
-
-struct parser_metadata_t {
-    bit<16>  remaining;
-}
-
 struct metadata {
-    ingress_metadata_t      ingress_metadata;
-    parser_metadata_t       parser_metadata;
     bit<14>                 ecmp_select;
 }
 
 struct headers {
     ethernet_t         ethernet;
     ipv4_t             ipv4;
-    mri_t              mri;
-    switch_t[MAX_HOPS] swtraces;
     rtp_t              rtp;
 }
 
@@ -120,30 +97,8 @@ parser MyParser(packet_in packet,
     }
 
     state parse_ipv4 {
-        packet.extract(hdr.ipv4);
-        verify(hdr.ipv4.ihl >= 5, error.IPHeaderTooShort);
-        transition select(hdr.ipv4.ihl) {
-            5             : accept;
-            default       : parse_mri;
-        }
-    }
-
-    state parse_mri {
-        packet.extract(hdr.mri);
-        meta.parser_metadata.remaining = hdr.mri.count;
-        transition select(meta.parser_metadata.remaining) {
-            0 : accept;
-            default: parse_swtrace;
-        }
-    }
-
-    state parse_swtrace {
-        packet.extract(hdr.swtraces.next);
-        meta.parser_metadata.remaining = meta.parser_metadata.remaining  - 1;
-        transition select(meta.parser_metadata.remaining) {
-            0 : accept;
-            default: parse_swtrace;
-        }
+        packet.extract(hdr.ipv4):
+        transition accept;
     }
 }
 
@@ -281,8 +236,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
     apply {
         packet.emit(hdr.ethernet);
         packet.emit(hdr.ipv4);
-        packet.emit(hdr.mri);
-        packet.emit(hdr.swtraces);
+        packet.emit(hdr.rtp);
     }
 }
 
