@@ -108,6 +108,7 @@ struct headers {
     mri_t              mri;
     switch_t[MAX_HOPS] swtraces;
     tigercy_t          tigercy;
+    rtp_t              rtp;
 }
 
 error { IPHeaderTooShort }
