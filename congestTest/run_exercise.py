@@ -27,6 +27,8 @@ from time import sleep
 
 import p4runtime_lib.simple_controller
 from mininet.cli import CLI
+import mininet.node
+import mininet.link
 from mininet.link import TCLLink
 from mininet.net import Mininet
 from mininet.topo import Topo
