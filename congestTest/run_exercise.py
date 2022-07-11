@@ -27,7 +27,7 @@ from time import sleep
 
 import p4runtime_lib.simple_controller
 from mininet.cli import CLI
-#from mininet.link import TCLink
+from mininet.link import TCLLink
 from mininet.net import Mininet
 from mininet.topo import Topo
 from p4_mininet import P4Host, P4Switch
@@ -252,7 +252,7 @@ class ExerciseRunner:
         self.topo = ExerciseTopo(self.hosts, self.switches, self.links, self.log_dir, self.bmv2_exe, self.pcap_dir)
 
         self.net = Mininet(topo = self.topo,
-                      link = TCLink,
+                      link = TCLLink,
                       host = P4Host,
                       switch = defaultSwitchClass,
                       controller = None)
