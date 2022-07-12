@@ -6,6 +6,7 @@ const bit<8>  UDP_PROTOCOL = 0x11;
 const bit<16> TYPE_IPV4 = 0x800;
 const bit<16> TYPE_IPV6 = 0x86dd;
 const bit<16> TYPE_TIGER = 0xD00F;
+const bit<16> TYPE_RTP = 0x88ff;
 
 #define MAX_HOPS 9
 
@@ -107,6 +108,7 @@ struct headers {
     mri_t              mri;
     switch_t[MAX_HOPS] swtraces;
     tigercy_t          tigercy;
+    rtp_t              rtp;
 }
 
 error { IPHeaderTooShort }
@@ -134,6 +136,14 @@ parser MyParser(packet_in packet,
 
     state parse_tigercy {
         packet.extract(hdr.tigercy);
+        transition select(hdr.ethernet.etherType) {
+            TYPE_RTP: parse_rtp;
+            default: accept;
+        }
+    }
+    
+    state parse_rtp {
+        packet.extract(hdr.rtp);
         transition select(hdr.ethernet.etherType) {
             TYPE_IPV6: parse_ipv6;
             default: accept;
