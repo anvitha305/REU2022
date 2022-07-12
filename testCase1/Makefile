@@ -14,7 +14,8 @@ source = $(wildcard *.p4)
 compiled_json := $(source:.p4=.json)
 
 ifndef DEFAULT_PROG
-DEFAULT_PROG = $(wildcard *.p4)
+#DEFAULT_PROG = $(wildcard *.p4)
+DEFAULT_PROG = basic.p4
 endif
 DEFAULT_JSON = $(BUILD_DIR)/$(DEFAULT_PROG:.p4=.json)
 
