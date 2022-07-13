@@ -91,14 +91,19 @@ struct ingress_metadata_t {
     bit<16>  count;
 }
 
+struct data_t {
+    bit<16>  remaining;
+}
 struct parser_metadata_t {
     bit<16>  remaining;
 }
 
+
 struct metadata {
     ingress_metadata_t      ingress_metadata;
     parser_metadata_t       parser_metadata;
-    bit<4>                  host;
+    data_t       data;
+    bit<4>   host;
 }
 
 struct headers {
@@ -141,7 +146,7 @@ parser MyParser(packet_in packet,
             default: accept;
         }
     }
-    
+
     state parse_rtp {
         packet.extract(hdr.rtp);
         transition select(hdr.ethernet.etherType) {
@@ -226,10 +231,9 @@ control MyIngress(inout headers hdr,
         hdr.tigercy.dstAddr = dstAddr;
         hdr.tigercy.ttl = hdr.tigercy.ttl - 1;
     }
-<<<<<<< HEAD
-    
-    action rtp_forward(rtpAddr_t srcAddr, rtpAddr_t dstAddr, egressSpec_t port) {
-        if (host == 1) {
+
+    action rtp_forward(rtpAddr_t dstAddr, egressSpec_t port) {
+        if (meta.host == 1) {
             tigercy_forward(dstAddr, port);
         }
         else {
@@ -239,8 +243,6 @@ control MyIngress(inout headers hdr,
         }
     }
 
-=======
->>>>>>> parent of 4e825ed (kjdlkdjdslj)
     table tigercy_lpm {
         key = {
             hdr.tigercy.dstAddr: lpm;
@@ -277,8 +279,7 @@ control MyIngress(inout headers hdr,
         size = 1024;
         default_action = drop();
     }
-<<<<<<< HEAD
-    
+
     table rtp_lpm {
         key = {
             hdr.rtp.dstAddr: lpm;
@@ -290,12 +291,11 @@ control MyIngress(inout headers hdr,
         size = 1024;
         default_action = drop();
     }
-=======
-
-  
->>>>>>> parent of 4e825ed (kjdlkdjdslj)
 
     apply {
+        if (hdr.rtp.isValid()){
+            rtp_lpm.apply();
+        }
         if (hdr.tigercy.isValid()) {
             tigercy_lpm.apply();
         }
@@ -305,6 +305,7 @@ control MyIngress(inout headers hdr,
         if (hdr.ipv6.isValid()) {
             ipv6_lpm.apply();
         }
+
     }
 }
 
