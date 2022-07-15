@@ -26,18 +26,14 @@ import subprocess
 from time import sleep
 
 import p4runtime_lib.simple_controller
-from mininet.cli import CLI
 import mininet.node
 import mininet.link
 from mininet.link import TCLink
+from mininet.cli import CLI
 from mininet.net import Mininet
 from mininet.topo import Topo
 from p4_mininet import P4Host, P4Switch
 from p4runtime_switch import P4RuntimeSwitch
-from mininet.net import Containernet
-from mininet.node import Node, Controller
-from mininet.log import info, setLogLevel
-#import custom
 
 
 def configureP4Switch(**switch_args):
@@ -133,13 +129,17 @@ class ExerciseRunner:
             log_dir  : string   // directory for mininet log files
             pcap_dir : string   // directory for mininet switch pcap files
             quiet    : bool     // determines if we print logger messages
+
             hosts    : dict<string, dict> // mininet host names and their associated properties
             switches : dict<string, dict> // mininet switch names and their associated properties
             links    : list<dict>         // list of mininet link properties
+
             switch_json : string // json of the compiled p4 example
             bmv2_exe    : string // name or path of the p4 switch binary
+
             topo : Topo object   // The mininet topology instance
             net : Mininet object // The mininet instance
+
     """
     def logger(self, *items):
         if not self.quiet:
@@ -157,6 +157,7 @@ class ExerciseRunner:
                        switch_json, bmv2_exe='simple_switch', quiet=False):
         """ Initializes some attributes and reads the topology json. Does not
             actually run the exercise. Use run_exercise() for that.
+
             Arguments:
                 topo_file : string    // A json file which describes the exercise's
                                          mininet topology.
@@ -239,6 +240,7 @@ class ExerciseRunner:
 
     def create_network(self):
         """ Create the mininet network object, and store it as self.net.
+
             Side effects:
                 - Mininet topology instance stored as self.topo
                 - Mininet instance stored as self.net
@@ -319,6 +321,7 @@ class ExerciseRunner:
 
     def do_net_cli(self):
         """ Starts up the mininet CLI and prints some helpful output.
+
             Assumes:
                 - A mininet instance is stored as self.net and self.net.start() has
                   been called.
