@@ -4,6 +4,15 @@ This is a GitHub Repository for the Mizzou 2022 Consumer Networking REU, specifi
 
 Here, we will be placing our code for our topologies and experimental setups for networks that use our framework TIGER, which is based on leveraging the aspects of Software-Defined Networking (SDN) and the Programming Protocol-Independent Packet Processors (P4) language. These features separate the control from the data plane, and allow the programmer greater flexibility in determining the processing of packets.
 
+
+## Dependencies
+* Ubuntu 18.04
+* Mininet: http://mininet.org/
+* Containernet: https://containernet.github.io/
+* P4v16
+* P4Runtime
+* Video for streaming for the tests: https://peach.blender.org/
+
 ## Our use cases:
 ### Priority Routing
 In order to denote what traffic is emergency traffic, we use a custom packet header to label the traffic. h1 is our host that sends the emergency traffic and h4 receives it, and this can be reconfigured in the Priority Routing directories PRBaseline and PRTest directories under tiger.p4 and with the sx-runtime.json config files.
@@ -15,6 +24,39 @@ In order to distribute how network trafic is managed, we use congestion control 
 
 ![image](https://user-images.githubusercontent.com/44482134/179602046-2e9b5a7e-e45c-4e7b-bd13-d6efc696b54c.png)
 
+## How to Run Use Cases:
+
+### Priority Routing
+Enter the following commands:
+```
+sudo make
+xterm h2 h2 h2 h2 h3 h5
+```
+In the h2 terminals:
+```
+ping 10.0.3.3 -s 47000
+```
+```
+ping 10.0.5.5 -s 47000
+```
+```
+ping 10.0.6.6 -s 47000
+```
+```
+vlc
+```
+In h3:
+```
+vlc rtp://10.0.3.3:5004
+```
+In h5:
+```
+vlc rtp://10.0.5.5:5004
+```
+In h6:
+```
+vlc rtp://10.0.6.6:5004
+```
 
 ## Some resources that we utilized during this process are as follows:  
 P4 Lang Tutorial GitHub: https://github.com/p4lang/tutorials.git  
