@@ -11,7 +11,9 @@ Here, we will be placing our code for our topologies and experimental setups for
 * Containernet: https://containernet.github.io/
 * P4v16
 * P4Runtime
+* VLC: https://www.videolan.org/vlc/
 * Video for streaming for the tests: https://peach.blender.org/
+* Wireshark
 
 ## Our use cases:
 ### Priority Routing
