@@ -57,6 +57,16 @@ In h6:
 ```
 vlc rtp://10.0.6.6:5004
 ```
+In the vlc h2 menu, begin streaming a video using RTP without transcoding and use 10.0.3.3, 10.0.5.5, and 10.0.6.6 as the stream locations.
+
+Do a similar ping and stream with h1 as stream source and h4 as stream location.
+
+You can measure results like us by typing the following in h1:
+```
+wireshark
+```
+
+and using the GUI to select s4-eth3 for packet data collection.
 
 ## Some resources that we utilized during this process are as follows:  
 P4 Lang Tutorial GitHub: https://github.com/p4lang/tutorials.git  
