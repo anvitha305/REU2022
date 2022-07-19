@@ -27,7 +27,7 @@ In order to distribute how network trafic is managed, we use congestion control 
 ![image](https://user-images.githubusercontent.com/44482134/179602046-2e9b5a7e-e45c-4e7b-bd13-d6efc696b54c.png)
 
 ## How to Run Use Cases:
-
+Hosts' IPs are 10.0.[host#].[host#]
 ### Priority Routing
 Enter the following commands:
 ```
@@ -69,6 +69,23 @@ wireshark
 ```
 
 and using the GUI to select s4-eth3 for packet data collection.
+
+### Congestion Control
+
+Do the following, according to how they were done in Priority Routing, but with new host numbers.
+
+h1 ping h3
+wireshark h5, view s4-eth3 and s5-eth3 as the links for capturing packets.
+h1 vlc h3
+h1 ping h4
+h1 vlc h4
+h1 ping h5
+h1 vlc h5
+h1 ping h6
+h1 vlc h6
+
+
+
 
 ## Some resources that we utilized during this process are as follows:  
 P4 Lang Tutorial GitHub: https://github.com/p4lang/tutorials.git  
