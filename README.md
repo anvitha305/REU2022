@@ -1,5 +1,4 @@
-# REU2022 - Repository for testing the framework Transmitting Information with Global-Designation of Emergency Routes
-(TIGER)
+# REU2022 - Repository for testing the framework Transmitting Information with Global-Designation of Emergency Routes (TIGER)
 
 
 This is a GitHub Repository for the Mizzou 2022 Consumer Networking REU, specifically the Network Services for UAV Swarm Based Applications.
