@@ -74,15 +74,15 @@ and using the GUI to select s4-eth3 for packet data collection.
 
 Do the following, according to how they were done in Priority Routing, but with new host numbers.
 
-h1 ping h3
-wireshark h5, view s4-eth3 and s5-eth3 as the links for capturing packets.
-h1 vlc h3
-h1 ping h4
-h1 vlc h4
-h1 ping h5
-h1 vlc h5
-h1 ping h6
-h1 vlc h6
+h1 ping h3  
+wireshark h5, view s4-eth3 and s5-eth3 as the links for capturing packets.  
+h1 vlc h3  
+h1 ping h4  
+h1 vlc h4  
+h1 ping h5  
+h1 vlc h5  
+h1 ping h6  
+h1 vlc h6  
 
 
 
