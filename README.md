@@ -10,11 +10,11 @@ Here, we will be placing our code for our topologies and experimental setups for
 * Ubuntu 18.04 Image for Importing to VirtualBox: https://releases.ubuntu.com/18.04/
 * Mininet: http://mininet.org/
 * Containernet: https://containernet.github.io/
-* P4v16
-* P4Runtime
+* P4v16: https://p4.org/p4-spec/docs/P4-16-v1.0.0-spec.html
+* P4Runtime v. 1.3.0: https://p4.org/p4-spec/p4runtime/main/P4Runtime-Spec.html 
 * VLC: https://www.videolan.org/vlc/
-* Video for streaming for the tests: https://peach.blender.org/
-* Wireshark
+* Video for streaming for the tests \[Big Buck Bunny\]: https://peach.blender.org/
+* Wireshark: https://www.wireshark.org/ 
 
 ## Our use cases:
 ### Priority Routing
