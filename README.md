@@ -7,7 +7,7 @@ Here, we will be placing our code for our topologies and experimental setups for
 
 
 ## Dependencies
-* Ubuntu 18.04
+* Ubuntu 18.04 Image for Importing to VirtualBox: https://releases.ubuntu.com/18.04/
 * Mininet: http://mininet.org/
 * Containernet: https://containernet.github.io/
 * P4v16
